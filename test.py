@@ -3,4 +3,4 @@ is not empty. """
 
 import pathlib
 
-assert (pathlib.Path.cwd() / "images").glob("*.jpg"), "No images found!"
+assert list((pathlib.Path.cwd() / "images").glob("*.jpg")), "No images found!"
