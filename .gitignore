@@ -2,6 +2,8 @@
 *.tif
 *.jpg
 *.tar*
+*.tff
+*.txt
 
 __pycache__
 
