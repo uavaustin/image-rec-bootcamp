@@ -2,23 +2,22 @@ from PIL import Image
 import pathlib
 from pathlib import Path
 tile_width = tile_height = 512
-save_dir = pathlib.Path("/home/jonathan/Downloads").expanduser()
+path = "./images"
+save_dir = pathlib.Path(path).expanduser()
 save_dir.mkdir(exist_ok=True, parents = True)
-img = Image.open("/home/jonathan/Downloads/background.jpg")
+img = Image.open(path+"/background.jpg")
 for x in range(0, img.size[0]-tile_width, tile_width):
     for y in range(0, img.size[1]-tile_height, tile_height):
         crop = img.crop((x,y,x+tile_width,y+tile_height))
         crop.save(save_dir / f"crop_{x}_{y}.jpg")
-background_tile = Image.open("/home/jonathan/Downloads/crop_3072_0.jpg")
+background_tile = Image.open(path+"/crop_3072_0.jpg")
 print(f"Generated {len(list(save_dir.glob('*.jpg')))} slices!")
 import tarfile
 import tempfile
 import requests
 from pathlib import Path
 import pathlib
-#url = "https://bintray.com/uavaustin/target-finder-assets/download_file?file_path=fonts.tar.gz"
 url = "https://bintray.com/uavaustin/target-finder-assets/download_file?file_path=base-shapes-v1.tar.gz"
-path = "/home/jonathan/Downloads"
 # Where to save assets.
 save_dir = pathlib.Path(path).expanduser()
 save_dir.mkdir(exist_ok=True, parents=True)
@@ -33,6 +32,21 @@ with tempfile.TemporaryDirectory() as d:
     with tarfile.open(tmp_file) as tar:
         tar.extractall(save_dir)
 target = Image.open(path+"/base-shapes-v1/pentagon/pentagon-01.png")
+
+url = "https://bintray.com/uavaustin/target-finder-assets/download_file?file_path=fonts.tar.gz"
+save_dir = pathlib.Path(path).expanduser()
+save_dir.mkdir(exist_ok=True, parents=True)
+
+res = requests.get(url, stream=True)
+
+# Make a temp dir to download archive.
+with tempfile.TemporaryDirectory() as d:
+    tmp_file = pathlib.Path(d) / "file.tar.gz"
+    tmp_file.write_bytes(res.raw.read())
+
+    with tarfile.open(tmp_file) as tar:
+        tar.extractall(save_dir)
+
 from PIL import ImageDraw, ImageFont
 
 # Create an drawable object which we can edit.
