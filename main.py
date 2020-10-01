@@ -1,4 +1,5 @@
 from PIL import Image
+from PIL import ImageDraw, ImageFont
 import pathlib
 import tarfile
 import tempfile
@@ -11,22 +12,22 @@ import requests
 #    im.save("./images/"+fname)
 
 img = Image.open("./background.jpg")
-img.show("Background")
-print("Image Size:")
-print(img.size)
-print("\n")
+#img.show("Background")
+#print("Image Size:")
+#print(img.size)
+#print("\n")
 
 w = h = 512
 
-save_dir_crops = pathlib.Path("./images").expanduser()
+save_dir_crops = pathlib.Path("./crops").expanduser()
 save_dir_crops.mkdir(exist_ok=True,parents=True)
 
 for x in range(0,img.size[0]-w,w):
     for y in range(0,img.size[1]-h,h):
         crop = img.crop((x,y,x+w,y+h))
         crop.save(save_dir_crops / f"crop_{x}_{y}.jpg")
-print("Crops Generated:")
-print(len(list(save_dir_crops.glob("*.jpg"))))
+#print("Crops Generated:")
+#print(len(list(save_dir_crops.glob("*.jpg"))))
 
 url = "https://bintray.com/uavaustin/target-finder-assets/download_file?file_path=base-shapes-v1.tar.gz"
 
@@ -43,8 +44,8 @@ with tempfile.TemporaryDirectory() as d:
     with tarfile.open(tmp_file) as tar:
         tar.extractall(save_dir_assets)
 
-shape = Image.open("./assets/base-shapes-v1/circle/circle-01.png")
-shape.show("Shape")
+#shape = Image.open("./assets/base-shapes-v1/circle/circle-01.png")
+#shape.show("Shape")
 
 url_fonts = "https://bintray.com/uavaustin/target-finder-assets/download_file?file_path=fonts.tar.gz"
 
@@ -57,3 +58,52 @@ with tempfile.TemporaryDirectory() as d:
     with tarfile.open(tmp_file) as tar:
         tar.extractall(save_dir_assets)
 
+## Image Manipulation
+
+target = Image.open("./assets/base-shapes-v1/pentagon/pentagon-01.png")
+target.rotate(45)
+target_draw = ImageDraw.Draw(target)
+
+alpha = "B"
+font_multip = 0.5
+
+font_file = save_dir_assets / "fonts/Gudea/Gudea-Bold.ttf"
+font_size = int(round(font_multip*target.height))
+font = ImageFont.truetype(str(font_file),font_size)
+
+target_w, target_h = target_draw.textsize(alpha,font=font)
+
+x = (target.width - target_w)/2
+y = (target.height - target_h)/2
+
+alpha_rgb = ((64,115,64))
+target_draw.text((x,y),alpha,alpha_rgb,font=font)
+
+angle = 45
+rotated_image = target.rotate(angle,expand=1)
+rotated_image.show("Rotated Image")
+
+for x in range (rotated_image.width):
+    for y in range(rotated_image.height):
+
+        r,g,b,a = rotated_image.getpixel((x,y))
+
+        if r == 255 and g == 255 and b == 255:
+            rotated_image.putpixel((x,y),(0,0,0,0))
+
+rotated_crop = rotated_image.crop(rotated_image.getbbox())
+
+#print(rotated_image.size)
+
+rotated_image = rotated_image.resize((100,100))
+
+paste_loc = (20,20)
+background_tile = img
+background_tile.paste(rotated_image,paste_loc,rotated_image)
+background_tile.show()
+
+w_target,h_target = rotated_image.size
+txt = pathlib.Path("background_target.txt")
+txt.write_text(
+        f"pentagon, {int(paste_loc[0])},{int(paste_loc[1])},{w_target},{h_target}\n"
+        )
