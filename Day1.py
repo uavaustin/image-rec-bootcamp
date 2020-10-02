@@ -16,9 +16,9 @@ from PIL import Image
 import pathlib
 
 img = Image.open("background.jpg")
-img.resize((8,8), Image.ANTIALIAS)
+img.resize((8, 8), Image.ANTIALIAS)
 img.save('img.jpg')
-img.show()
+# img.show()
 print("Image width, height: {}.".format(img.size))
 
 
@@ -124,7 +124,31 @@ target_draw.text((x,y), alpha, alpha_rgb, font=font)
 # Rotate target
 angle = 45
 rotated_image = target.rotate(angle, expand=1)
-rotated_image.show("Rotated Image")
+# rotated_image.show("Rotated Image")
 rotated_image.save("C:/Users/bprim/PycharmProjects/UAV_Img/image-rec-bootcamp/manipulated_img.png")
 
 
+for x in range(rotated_image.width):
+    for y in range(rotated_image.height):
+
+        r, g, b, a = rotated_image.getpixel((x, y))
+
+        if r == 255 and g == 255 and b == 255:
+            rotated_image.putpixel((x, y), (0, 0, 0, 0))
+
+rotated_crop = rotated_image.crop(rotated_image.getbbox())
+rotated_image = rotated_image.resize((100, 100))
+
+print(f"size of the rotated image{rotated_image.size}")
+
+
+paste_loc = (20, 20)
+tile_img = Image.open("C:/Users/bprim/PycharmProjects/UAV_Img/image-rec-bootcamp/crop/crop_0_0.jpg")
+tile_img.paste(rotated_image, paste_loc, rotated_image)
+tile_img.show()
+
+w_target, h_target = rotated_image.size
+txt = pathlib.Path("target.txt")
+txt.write_text(
+    f"pentagon, {int(paste_loc[0])}, {int(paste_loc[1])}, {w_target}, {h_target}\n"
+)
